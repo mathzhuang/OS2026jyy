@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <testkit.h>
-#include “labyrinth.h”
+#include "labyrinth.h"
 
 int main(int argc, char *argv[]) {
     // 定义变量来存储解析到的参数
@@ -15,27 +15,27 @@ int main(int argc, char *argv[]) {
 
     // 遍历 argv 数组解析参数 (argv[0] 是程序名，从 i = 1 开始)
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], “--version”) == 0) {
+        if (strcmp(argv[i], "--version") == 0) {
             is_version = true;
             // --version 不能与其他参数混合
             if (argc > 2) {
                 return 1;
             }
-        } else if (strcmp(argv[i], “--map”) == 0 || strcmp(argv[i], “-m”) == 0) {
+        } else if (strcmp(argv[i], "--map") == 0 || strcmp(argv[i], "-m") == 0) {
             // 处理 --map 或 -m 选项，获取下一个参数作为文件名
             if (i + 1 < argc) {
                 map_file = argv[++i];
             } else {
                 return 1;
             }
-        } else if (strcmp(argv[i], “--player”) == 0 || strcmp(argv[i], “-p”) == 0) {
+        } else if (strcmp(argv[i], "--player") == 0 || strcmp(argv[i], "-p") == 0) {
             // 处理 --player 或 -p 选项，获取下一个参数的第一个字符作为玩家 ID
             if (i + 1 < argc) {
                 player_id = argv[++i][0];
             } else {
                 return 1;
             }
-        } else if (strcmp(argv[i], “--move”) == 0) {
+        } else if (strcmp(argv[i], "--move") == 0) {
             // 处理 --move 选项，获取下一个参数作为移动方向
             if (i + 1 < argc) {
                 move_dir = argv[++i];
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 
     // 处理 --version 命令
     if (is_version) {
-        printf(“%s\n”, VERSION_INFO);
+        printf("%s\n", VERSION_INFO);
         return 0;
     }
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // 判断是”打印地图”还是”移动玩家”
+    // 判断是"打印地图"还是"移动玩家"
     if (move_dir != NULL) {
         // 存在 --move 参数：尝试移动玩家
         if (!movePlayer(&lab, player_id, move_dir)) {
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     } else {
         // 不存在 --move 参数：只打印地图
         for (int i = 0; i < lab.rows; i++) {
-            printf(“%s\n”, lab.map[i]);
+            printf("%s\n", lab.map[i]);
         }
     }
 
@@ -96,11 +96,11 @@ int main(int argc, char *argv[]) {
 }
 
 void printUsage() {
-    printf(“Usage:\n”);
-    printf(“  labyrinth --map map.txt --player id\n”);
-    printf(“  labyrinth -m map.txt -p id\n”);
-    printf(“  labyrinth --map map.txt --player id --move direction\n”);
-    printf(“  labyrinth --version\n”);
+    printf("Usage:\n");
+    printf("  labyrinth --map map.txt --player id\n");
+    printf("  labyrinth -m map.txt -p id\n");
+    printf("  labyrinth --map map.txt --player id --move direction\n");
+    printf("  labyrinth --version\n");
 }
 
 // 验证玩家 ID 的合法性
@@ -117,7 +117,7 @@ bool isValidPlayer(char playerId) {
 //   3. 列数超过 MAX_COLS
 //   4. 行长度不一致（非矩形地图）
 bool loadMap(Labyrinth *labyrinth, const char *filename) {
-    FILE *f = fopen(filename, “r”);
+    FILE *f = fopen(filename, "r");
     if (f == NULL) {
         return false;
     }
@@ -209,13 +209,13 @@ bool isEmptySpace(Labyrinth *labyrinth, int row, int col) {
 bool movePlayer(Labyrinth *labyrinth, char playerId, const char *direction) {
     // 验证方向参数
     int drow = 0, dcol = 0;
-    if (strcmp(direction, “up”) == 0) {
+    if (strcmp(direction, "up") == 0) {
         drow = -1;
-    } else if (strcmp(direction, “down”) == 0) {
+    } else if (strcmp(direction, "down") == 0) {
         drow = 1;
-    } else if (strcmp(direction, “left”) == 0) {
+    } else if (strcmp(direction, "left") == 0) {
         dcol = -1;
-    } else if (strcmp(direction, “right”) == 0) {
+    } else if (strcmp(direction, "right") == 0) {
         dcol = 1;
     } else {
         return false;
@@ -255,14 +255,14 @@ bool movePlayer(Labyrinth *labyrinth, char playerId, const char *direction) {
 // 保存迷宫地图到文件
 // 返回 true 表示保存成功，false 表示保存失败
 bool saveMap(Labyrinth *labyrinth, const char *filename) {
-    FILE *f = fopen(filename, “w”);
+    FILE *f = fopen(filename, "w");
     if (f == NULL) {
         return false;
     }
 
     // 逐行写入地图
     for (int i = 0; i < labyrinth->rows; i++) {
-        fprintf(f, “%s\n”, labyrinth->map[i]);
+        fprintf(f, "%s\n", labyrinth->map[i]);
     }
 
     fclose(f);
