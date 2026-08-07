@@ -143,22 +143,24 @@ bool evaluate_expression(const char* expression, int* result) {
     }
 
     // 编译成共享库
-    // 需要与已加载的库链接，使用 -Wl,--unresolved-symbols=ignore-in-object-files
-    // 以允许对已加载库中符号的引用
+    // 编译时生成一个与已加载库兼容的共享库
+    // 延迟符号绑定（RTLD_LAZY）直到执行时，以便可以链接到动态加载的库
+    // 输出重定向到 /dev/null 以隐藏可能的警告
     char so_cmd[512];
     snprintf(so_cmd, sizeof(so_cmd),
-             "gcc -fPIC -shared -o %s %s -Wl,--unresolved-symbols=ignore-in-object-files 2>/dev/null",
+             "gcc -fPIC -shared -o %s %s 2>/dev/null",
              so_file, c_file);
 
     if (system(so_cmd) != 0) {
         unlink(c_file);
+        unlink(so_file);
         return false;
     }
 
     // 动态加载生成的共享库
-    // 清除之前的 dlopen 错误
-    dlerror();
-    void* handle = dlopen(so_file, RTLD_LAZY);
+    // 使用 RTLD_NOW（而不是 RTLD_LAZY）进行立即符号绑定
+    // 这样如果表达式引用未定义的函数，dlopen 就会立即失败
+    void* handle = dlopen(so_file, RTLD_NOW);
     if (!handle) {
         unlink(c_file);
         unlink(so_file);
@@ -168,7 +170,6 @@ bool evaluate_expression(const char* expression, int* result) {
     // 获取包装函数的指针
     // 使用 dlsym 从加载的库中查找符号
     typedef int (*eval_func_t)(void);
-    dlerror();  // 清除之前的错误
     eval_func_t eval_func = (eval_func_t)dlsym(handle, "__crepl_eval_func");
 
     if (!eval_func) {
@@ -179,18 +180,7 @@ bool evaluate_expression(const char* expression, int* result) {
     }
 
     // 执行函数获取结果
-    // 清除之前的错误
-    dlerror();
     *result = eval_func();
-
-    // 检查执行时是否发生错误（如调用未定义的函数）
-    const char* error = dlerror();
-    if (error) {
-        dlclose(handle);
-        unlink(c_file);
-        unlink(so_file);
-        return false;
-    }
 
     // 卸载动态库（用完即卸）
     dlclose(handle);
