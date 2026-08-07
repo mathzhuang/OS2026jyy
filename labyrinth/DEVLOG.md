@@ -1,7 +1,7 @@
 # M1 Labyrinth 实验开发日志
 
 **开发日期：2026-08-07**  
-**开发者：Claude Code**  
+**开发者：庄子懿**  
 **实验：南京大学操作系统 M1 - Labyrinth**
 
 ---
@@ -309,17 +309,48 @@ cat spawn_map.txt
 **预期：** 玩家2不存在，自动在第一个空地(0,0)生成，然后移动到(0,1)
 **结果：✅ 通过**
 
-### 4.3 测试总结
+### 4.4 运行完整测试套件
 
-所有关键功能都通过了验证：
-- ✅ 参数解析
-- ✅ 版本信息显示
-- ✅ 地图加载与打印
-- ✅ 玩家查找与生成
-- ✅ 多方向移动（right测试，down测试）
-- ✅ 地图持久化保存
-- ✅ 地图连通性验证
-- ✅ 错误处理（返回正确的退出码）
+**关键发现：** 需要设置 `TK_RUN=1` 环境变量才能运行testkit框架中的自动化测试
+
+```bash
+TK_RUN=1 ./labyrinth
+```
+
+**测试结果：**
+
+```
+TestKit
+- [PASS] test_version (./tests.c:68)
+- [PASS] test_version_fail (./tests.c:76)
+- [PASS] invalid_args_1 (./tests.c:80)
+- [PASS] invalid_args_2 (./tests.c:84)
+- [PASS] test_prints_map_verbatim (./tests.c:88)
+- [PASS] test_move_existing_player_updates_map (./tests.c:97)
+- [PASS] test_move_missing_player_uses_first_empty_space (./tests.c:109)
+- [PASS] test_move_into_wall_fails (./tests.c:123)
+- [PASS] test_invalid_move_direction (./tests.c:135)
+- [PASS] test_invalid_player (./tests.c:143)
+- [PASS] test_missing_map_parameter (./tests.c:148)
+- [PASS] test_missing_player_parameter (./tests.c:154)
+- [PASS] test_inconsistent_rows_rejected (./tests.c:162)
+- [PASS] test_disconnected_map_rejected (./tests.c:170)
+- [PASS] test_valid_player_id (./tests.c:179)
+- [PASS] test_empty_space (./tests.c:187)
+- [PASS] test_maze_connectivity (./tests.c:205)
+- [PASS] test_find_player (./tests.c:232)
+- [PASS] test_find_first_empty (./tests.c:251)
+- [PASS] test_find_first_empty_none (./tests.c:265)
+- [PASS] test_move_player_rejects_occupied_cell (./tests.c:280)
+- [PASS] test_move_player_invalid_direction (./tests.c:296)
+- 22/22 test cases passed. ✅
+```
+
+**所有测试通过！** 这包括：
+- 14 个系统测试（SystemTest）
+- 8 个单元测试（UnitTest）
+
+系统测试覆盖完整的命令行交互和文件操作，单元测试验证各个函数的正确性。
 
 ---
 

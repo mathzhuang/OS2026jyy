@@ -271,17 +271,41 @@ typedef struct {
 
 ## 编译和运行
 
+### 编译
+
 ```bash
-# 编译
 cd labyrinth
 make
+```
 
-# 运行示例
+### 运行示例
+
+```bash
+# 显示版本信息
 ./labyrinth --version
-./labyrinth --map maps/map.txt --player 1
-./labyrinth --map maps/map.txt --player 1 --move right
 
-# 清理编译文件
+# 打印指定地图（玩家1已存在于地图中）
+./labyrinth --map maps/map.txt --player 1
+
+# 移动玩家并保存地图
+./labyrinth --map maps/map.txt --player 1 --move right
+```
+
+### 运行测试
+
+本程序包含完整的单元测试和系统测试（使用testkit框架）：
+
+```bash
+# 运行所有22个测试用例
+TK_RUN=1 ./labyrinth
+
+# 运行测试并显示详细输出（包括失败的输出）
+TK_VERBOSE=1 TK_RUN=1 ./labyrinth
+```
+
+### 清理编译文件
+
+```bash
 make clean
 ```
 
