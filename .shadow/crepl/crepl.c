@@ -4,7 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <dlfcn.h>
-#include <sys/wait.h>
 
 // 用于存储已编译函数的动态库列表
 #define MAX_LIBS 256
@@ -42,21 +41,6 @@ static bool write_source_file(const char* filename, const char* content) {
     fclose(f);
 
     return written == strlen(content);
-}
-
-// 根据已加载的共享库生成有效的 C 代码头部
-// 用于声明所有已编译的函数，以便新编译的代码可以调用它们
-// 参数:
-//   - buffer: 用于存储头部代码的缓冲区
-//   - size: 缓冲区大小
-static void generate_function_declarations(char* buffer, size_t size) {
-    // 初始化为空字符串
-    buffer[0] = '\0';
-
-    // 对于每个已加载的共享库，我们需要生成函数声明
-    // 这里简单地添加一个包含所有可能函数的声明
-    // 在实际应用中，可能需要维护一个函数列表
-    // 目前保持为空，因为测试用例中的函数可以通过链接器链接找到
 }
 
 // 编译并加载函数定义
@@ -172,6 +156,8 @@ bool evaluate_expression(const char* expression, int* result) {
     }
 
     // 动态加载生成的共享库
+    // 清除之前的 dlopen 错误
+    dlerror();
     void* handle = dlopen(so_file, RTLD_LAZY);
     if (!handle) {
         unlink(c_file);
@@ -182,6 +168,7 @@ bool evaluate_expression(const char* expression, int* result) {
     // 获取包装函数的指针
     // 使用 dlsym 从加载的库中查找符号
     typedef int (*eval_func_t)(void);
+    dlerror();  // 清除之前的错误
     eval_func_t eval_func = (eval_func_t)dlsym(handle, "__crepl_eval_func");
 
     if (!eval_func) {
@@ -192,7 +179,18 @@ bool evaluate_expression(const char* expression, int* result) {
     }
 
     // 执行函数获取结果
+    // 清除之前的错误
+    dlerror();
     *result = eval_func();
+
+    // 检查执行时是否发生错误（如调用未定义的函数）
+    const char* error = dlerror();
+    if (error) {
+        dlclose(handle);
+        unlink(c_file);
+        unlink(so_file);
+        return false;
+    }
 
     // 卸载动态库（用完即卸）
     dlclose(handle);
