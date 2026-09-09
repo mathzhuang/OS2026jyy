@@ -60,9 +60,9 @@ def run_game(stdscr, map_file):
     display_map(stdscr, map_state)
 
     # Display control instructions
-    stdscr.addstr(len(map_state) + 2, 0, "Player 1: WASD to move")
-    stdscr.addstr(len(map_state) + 3, 0, "Player 2: HJKL to move")
-    stdscr.addstr(len(map_state) + 4, 0, "Press Q to quit")
+    safe_addstr(stdscr, len(map_state) + 2, 0, "Player 1: WASD to move")
+    safe_addstr(stdscr, len(map_state) + 3, 0, "Player 2: HJKL to move")
+    safe_addstr(stdscr, len(map_state) + 4, 0, "Press Q to quit")
     stdscr.refresh()
 
     # Game main loop
@@ -98,9 +98,9 @@ def run_game(stdscr, map_file):
         display_map(stdscr, map_state)
 
         # Redisplay control instructions
-        stdscr.addstr(len(map_state) + 2, 0, "Player 1: WASD to move")
-        stdscr.addstr(len(map_state) + 3, 0, "Player 2: HJKL to move")
-        stdscr.addstr(len(map_state) + 4, 0, "Press Q to quit")
+        safe_addstr(stdscr, len(map_state) + 2, 0, "Player 1: WASD to move")
+        safe_addstr(stdscr, len(map_state) + 3, 0, "Player 2: HJKL to move")
+        safe_addstr(stdscr, len(map_state) + 4, 0, "Press Q to quit")
         stdscr.refresh()
 
     # Clean up temporary files
@@ -120,7 +120,6 @@ def create_temp_map_file(original_map_file):
 
 
 def get_map_state(labyrinth_path, map_file):
-    print(f"Executing command: {labyrinth_path} --map {map_file} --player 0")
     result = subprocess.run([str(labyrinth_path), "--map", map_file, "--player", "0"], capture_output=True, text=True)
     if result.returncode != 0:
         print(f"Error: {result.stderr}")
@@ -128,16 +127,30 @@ def get_map_state(labyrinth_path, map_file):
 
 
 def move_player(labyrinth_path, map_file, player_id, direction):
-    print(f"Executing command: {labyrinth_path} --map {map_file} --player {player_id} --move {direction}")
     result = subprocess.run([str(labyrinth_path), "--map", map_file, "--player", str(player_id), "--move", direction], capture_output=True, text=True)
     if result.returncode != 0:
         print(f"Movement error: {result.stderr}")
 
 
+def safe_addstr(stdscr, y, x, text):
+    """Write text without crashing when the terminal is too small."""
+    h, w = stdscr.getmaxyx()
+    if y >= h or x >= w:
+        return
+    try:
+        stdscr.addstr(y, x, text[: w - x - 1])
+    except curses.error:
+        pass
+
+
 def display_map(stdscr, map_state):
     stdscr.clear()
+    h, _ = stdscr.getmaxyx()
     for i, line in enumerate(map_state):
-        stdscr.addstr(i, 0, line)
+        if i >= h:
+            safe_addstr(stdscr, h - 1, 0, "[terminal too small - please enlarge]")
+            break
+        safe_addstr(stdscr, i, 0, line)
     stdscr.refresh()
 
 

@@ -27,8 +27,8 @@ Labyrinth 是一个基于命令行的迷宫游戏实现，属于南京大学蒋�
 
 ```bash
 ./labyrinth --version
-./labyrinth --map map.txt --player 1
-./labyrinth -m map.txt -p 1 --move right
+./labyrinth --map maps/map.txt --player 1
+./labyrinth -m maps/open.txt -p 2 --move up
 ```
 
 ### 2. 地图文件格式
@@ -72,6 +72,7 @@ bool isValidPlayer(char playerId) {
 - 打开文件并逐行读取
 - 验证所有行的长度是否一致
 - 检查行数和列数是否超过限制
+- 逐行读取时统一去掉行尾换行符（兼容 LF `\n` 与 Windows CRLF `\r\n`）
 - 失败情况：无法打开文件、行长度不一致、超过限制
 
 ```c
@@ -190,8 +191,10 @@ void dfs(Labyrinth *labyrinth, int row, int col,
    └─ 确保所有空地连通
 
 5. 根据是否提供 --move 参数执行不同操作
-   ├─ 有 --move：移动玩家，保存地图
-   └─ 无 --move：打印当前地图
+   ├─ 有 --move：移动玩家，成功后把更新后的地图写回文件
+   └─ 无 --move：直接使用当前地图
+
+6. 打印最终地图后退出（移动成功或纯打印都会输出地图）
 ```
 
 ## 错误处理
@@ -263,7 +266,10 @@ typedef struct {
 
 ### 地图打印
 
-当不提供 `--move` 参数时，程序会原样打印当前地图，包括所有玩家和障碍物。
+程序在退出前统一打印最终地图：
+- 不提供 `--move` 时，打印原样地图（含所有玩家和障碍物）；
+- 提供 `--move` 且移动成功时，先保存再打印更新后的地图；
+- 移动失败（撞墙、方向非法等）则直接返回 1，不打印。
 
 ### 文件持久化
 
@@ -287,8 +293,8 @@ make
 # 打印指定地图（玩家1已存在于地图中）
 ./labyrinth --map maps/map.txt --player 1
 
-# 移动玩家并保存地图
-./labyrinth --map maps/map.txt --player 1 --move right
+# 移动玩家并保存（成功后会打印更新后的地图）
+./labyrinth --map maps/open.txt --player 2 --move up
 ```
 
 ### 运行测试
