@@ -297,6 +297,24 @@ make
 ./labyrinth --map maps/open.txt --player 2 --move up
 ```
 
+### 前端界面（可选）
+
+实验还附带两个 Python 前端，内部通过子进程调用本程序实现：
+
+- **hotseat.py**（本地双人，curses 界面）：需地图同时含玩家 0 和 1。
+  ```bash
+  python3 frontend/hotseat.py --map maps/map.txt
+  # 玩家0: WASD；玩家1: HJKL；Q 退出
+  ```
+- **online.py**（多人在线，SSH 服务器，需 `pip install paramiko`）：一个终端起服务器，每个玩家用 `ssh` 连入。
+  ```bash
+  python3 frontend/online.py --map maps/map.txt   # 终端1，保持运行
+  ssh -p 4399 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+      -o PreferredAuthentications=none -o PubkeyAuthentication=no \
+      玩家A@127.0.0.1                              # 终端2/3，每人一个
+  ```
+  地图里每个数字 0-9 对应一个玩家位。详细用法见 QUICKSTART.md。
+
 ### 运行测试
 
 本程序包含完整的单元测试和系统测试（使用testkit框架）：
