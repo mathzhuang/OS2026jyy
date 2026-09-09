@@ -9,7 +9,7 @@ SystemTest(trivial, ((const char *[]){})) {
     int *p1 = mymalloc(4);
     tk_assert(p1 != NULL, "malloc should not return NULL");
     *p1 = 1024;
-    
+
     int *p2 = mymalloc(4);
     tk_assert(p2 != NULL, "malloc should not return NULL");
     *p2 = 2048;
@@ -35,27 +35,28 @@ SystemTest(vmalloc, ((const char *[]){})) {
     vmfree(p2, 8192);
 }
 
+// 并发冒烟测试：多个线程同时 malloc/free（不做任何全局计数，保持 fast
+// path 无共享原子操作，这与本实验"多处理器并行"的目标一致）。
 #define N 100000
 void T_malloc() {
     for (int i = 0; i < N; i++) {
-        mymalloc(0);
+        char *p = mymalloc(64);
+        tk_assert(p != NULL, "malloc should not return NULL");
+        p[0] = (char)i;
+        myfree(p);
     }
 }
 
 SystemTest(concurrent, ((const char *[]){})) {
-    // We don't need this malloc_count; you can safely remove this test case.
-    extern long malloc_count;
     pthread_t t1, t2, t3, t4;
 
     pthread_create(&t1, NULL, (void *(*)(void *))T_malloc, NULL);
     pthread_create(&t2, NULL, (void *(*)(void *))T_malloc, NULL);
     pthread_create(&t3, NULL, (void *(*)(void *))T_malloc, NULL);
     pthread_create(&t4, NULL, (void *(*)(void *))T_malloc, NULL);
-    
+
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
     pthread_join(t3, NULL);
     pthread_join(t4, NULL);
-
-    tk_assert(malloc_count == 4 * N, "malloc_count should be 4N");
 }
