@@ -320,4 +320,4 @@ bool isConnected(Labyrinth *labyrinth) {
     }
 
     return true;
-}
+ }
