@@ -85,11 +85,11 @@ int main(int argc, char *argv[]) {
         if (!saveMap(&lab, map_file)) {
             return 1;
         }
-    } else {
-        // 不存在 --move 参数：只打印地图
-        for (int i = 0; i < lab.rows; i++) {
-            printf("%s\n", lab.map[i]);
-        }
+    }
+
+    // 打印地图：无 --move 打印原图，移动成功打印更新后的图
+    for (int i = 0; i < lab.rows; i++) {
+        printf("%s\n", lab.map[i]);
     }
 
     return 0;
@@ -127,9 +127,9 @@ bool loadMap(Labyrinth *labyrinth, const char *filename) {
 
     char line[MAX_COLS + 2];
     while (fgets(line, sizeof(line), f) != NULL && labyrinth->rows < MAX_ROWS) {
-        // 移除行尾的换行符
+        // 移除行尾换行符，兼容 LF(\n) 与 Windows CRLF(\r\n)
         int len = strlen(line);
-        if (len > 0 && line[len - 1] == '\n') {
+        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r')) {
             line[len - 1] = '\0';
             len--;
         }
