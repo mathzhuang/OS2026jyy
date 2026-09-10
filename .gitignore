@@ -6,6 +6,7 @@
 !*.md
 !Makefile
 !*.py
+!*.sh
 
 # 不发布到 GitHub 的开发文档（仅保留本地副本，不提交）
 DEVLOG.md
