@@ -7,7 +7,6 @@
 #include <getopt.h>
 #include <sys/types.h>
 
-/* ==================== 版本与帮助信息 ==================== */
 #define PSTREE_VERSION "1.0.0"
 
 void print_usage(const char *prog) {
@@ -24,7 +23,7 @@ void print_version(void) {
     printf("pstree version %s\n", PSTREE_VERSION);
 }
 
-/* ==================== 进程信息读取函数 ==================== */
+/* 进程信息读取 */
 
 /**
  * read_comm - 从/proc/{pid}/comm中读取进程名称
@@ -60,7 +59,7 @@ static int read_comm(pid_t pid, char *buf, size_t n) {
  * @ppid_out: 输出参数，用于返回父进程ID
  *
  * stat文件格式: pid (comm) state ppid ...
- * 我们需要解析出ppid字段（第4个字段）
+ * 需要解析出ppid字段（第4个字段）
  *
  * 返回值：成功返回0，失败返回-1
  */
@@ -89,7 +88,7 @@ static int get_ppid_from_stat(pid_t pid, pid_t *ppid_out) {
     return 0;
 }
 
-/* ==================== 进程树结构和排序 ==================== */
+/* 进程树结构和排序  */
 
 /**
  * 进程信息结构体，用于存储单个进程的信息
@@ -118,7 +117,7 @@ static int cmp_name(const void *a, const void *b) {
     return strcmp(pa->comm, pb->comm);
 }
 
-/* ==================== 进程树打印函数 ==================== */
+/*  进程树打印函数  */
 
 /**
  * print_tree - 递归打印进程树
@@ -190,8 +189,6 @@ static void print_tree(ProcessInfo *processes, int count, pid_t parent_pid,
     free(children);
 }
 
-/* ==================== 主函数 ==================== */
-
 int main(int argc, char *argv[]) {
     int show_pids = 0;      // -p 选项标志
     int numeric_sort = 0;   // -n 选项标志
@@ -222,7 +219,6 @@ int main(int argc, char *argv[]) {
                 print_usage(argv[0]);
                 return 0;
             default:
-                // 无效选项
                 fprintf(stderr, "Invalid option: %c\n", opt);
                 print_usage(argv[0]);
                 return 1;
